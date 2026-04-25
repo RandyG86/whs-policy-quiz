@@ -391,7 +391,6 @@ header h1 {
 const CATEGORIES = [
   { name: "WHS - General Safety",      color: "#E71D36" },
   { name: "WHS - Ergonomics & TPS",    color: "#FF6B35" },
-  { name: "WHS - Emergency Response",   color: "#D90429" },
   { name: "WHS - PIT Safety",          color: "#3A86FF" },
   { name: "WHS - Phone & Headphones",  color: "#7209B7" },
   { name: "WHS - Parking Lot Safety",  color: "#2EC4B6" },
@@ -431,7 +430,7 @@ const SAMPLE_QUESTIONS = [
       3: "Incorrect — Taking photos delays the response. Scene safety and getting help are the immediate priorities."
     },
     policyRef: "WHS NA Policy: Incident Response & Reporting",
-    source: "https://policy.a2z.com/docs/34220/publication"
+    source: "https://policy.a2z.com/docs/76486/publication"
   },
   {
     id: "whs-3",
@@ -446,7 +445,7 @@ const SAMPLE_QUESTIONS = [
       3: "Incorrect — PPE is always required on the warehouse floor. A safety vest ensures you are visible to PIT operators and other associates."
     },
     policyRef: "WHS NA Policy: Personal Protective Equipment (PPE)",
-    source: "https://policy.a2z.com/docs/34220/publication"
+    source: "https://policy.a2z.com/docs/116356/publication"
   },
   {
     id: "whs-4",
@@ -461,7 +460,7 @@ const SAMPLE_QUESTIONS = [
       3: "Too late — Waiting for a stand-down delays hazard identification. The same hazard could injure someone before the next meeting."
     },
     policyRef: "WHS NA Policy: Incident & Near-Miss Reporting",
-    source: "https://policy.a2z.com/docs/34220/publication"
+    source: "https://policy.a2z.com/docs/76486/publication"
   },
   {
     id: "whs-5",
@@ -476,7 +475,7 @@ const SAMPLE_QUESTIONS = [
       3: "Incorrect — Training does not change human physical limits. The 50 lb threshold exists regardless of experience level."
     },
     policyRef: "WHS NA Policy: Manual Material Handling",
-    source: "https://policy.a2z.com/docs/34220/publication"
+    source: "https://policy.a2z.com/docs/665159/publication"
   },
   {
     id: "whs-6",
@@ -491,7 +490,7 @@ const SAMPLE_QUESTIONS = [
       3: "Incorrect — Fire drills are separate emergency preparedness exercises. Stand-Downs are discussion-based safety briefings."
     },
     policyRef: "WHS NA Policy: Safety Communication & Stand-Downs",
-    source: "https://policy.a2z.com/docs/34220/publication"
+    source: "https://policy.a2z.com/docs/81403/publication"
   },
   {
     id: "whs-7",
@@ -506,7 +505,7 @@ const SAMPLE_QUESTIONS = [
       3: "Unacceptable — Every minute a fire exit is blocked is a minute someone's life could be at risk. Immediate reporting is required."
     },
     policyRef: "WHS NA Policy: Emergency Egress & Life Safety",
-    source: "https://policy.a2z.com/docs/34220/publication"
+    source: "https://policy.a2z.com/docs/665159/publication"
   },
 
   // ═══════════════════════════════════════════════════════════
@@ -637,80 +636,10 @@ const SAMPLE_QUESTIONS = [
   // WHS - EMERGENCY RESPONSE
   // ═══════════════════════════════════════════════════════════
   {
-    id: "emer-1",
-    category: "WHS - Emergency Response",
-    question: "What should you do when the fire alarm sounds?",
-    answers: ["Finish your current task then evacuate", "Immediately stop work and evacuate to your designated assembly point", "Wait for manager instructions", "Call 911 before leaving"],
-    correctIndex: 1,
-    explanation: "When the fire alarm sounds, stop work immediately, leave all belongings, and proceed to your designated assembly point. Do not use elevators.",
-    whyWrong: {
-      0: "Dangerous — Every second counts in a fire. No task is worth risking your life. Stop immediately and evacuate.",
-      2: "Incorrect — Do not wait for anyone. The alarm IS the instruction. Evacuate immediately using the nearest safe exit.",
-      3: "Incorrect — Calling 911 delays your evacuation. The alarm system automatically alerts emergency services. Get out first."
-    },
-    policyRef: "WHS NA Policy: Emergency Action Plan — Fire Evacuation",
-    source: "https://policy.a2z.com/docs/694396/publication"
-  },
   {
-    id: "emer-2",
-    category: "WHS - Emergency Response",
-    question: "What does 'RACE' stand for in fire emergency response?",
-    answers: ["Run, Alert, Cover, Escape", "Rescue, Alarm, Contain, Extinguish/Evacuate", "Report, Assess, Call, Exit", "React, Assist, Control, Eliminate"],
-    correctIndex: 1,
-    explanation: "RACE: Rescue anyone in immediate danger, sound the Alarm, Contain the fire by closing doors, Extinguish if small and safe to do so or Evacuate.",
-    whyWrong: {
-      0: "Incorrect — 'Run' is not the first step. You first check if anyone needs Rescue, then sound the Alarm.",
-      2: "Incorrect — The correct acronym prioritizes Rescue first, not Reporting. People's safety comes before documentation.",
-      3: "Incorrect — The standard fire response acronym used in WHS training is RACE: Rescue, Alarm, Contain, Extinguish/Evacuate."
-    },
-    policyRef: "WHS NA Policy: Emergency Action Plan — Fire Response (RACE)",
-    source: "https://policy.a2z.com/docs/694396/publication"
-  },
   {
-    id: "emer-3",
-    category: "WHS - Emergency Response",
-    question: "During a tornado warning at an Amazon FC, where should associates shelter?",
-    answers: ["Near windows to monitor the storm", "Designated interior shelter areas away from exterior walls and windows", "The parking lot to drive away", "Under their workstation"],
-    correctIndex: 1,
-    explanation: "Move to designated interior shelter areas (usually interior rooms or hallways on the lowest floor), away from all windows, exterior walls, and large open roof spans.",
-    whyWrong: {
-      0: "Extremely dangerous — Windows shatter in tornadoes and become deadly projectiles. Stay as far from windows as possible.",
-      2: "Dangerous — Vehicles are extremely unsafe in tornadoes. The parking lot is one of the worst places to be.",
-      3: "Insufficient — Workstations near exterior walls or under large roof spans are not safe. Move to designated interior shelter areas."
-    },
-    policyRef: "WHS NA Policy: Emergency Action Plan — Severe Weather",
-    source: "https://policy.a2z.com/docs/694396/publication"
-  },
   {
-    id: "emer-4",
-    category: "WHS - Emergency Response",
-    question: "Who is authorized to use a fire extinguisher at an Amazon site?",
-    answers: ["Only the fire department", "Only WHS staff", "Any trained associate, but only on small fires with a clear escape route", "No one — always evacuate immediately"],
-    correctIndex: 2,
-    explanation: "Associates who have completed fire extinguisher training may use one on small, contained fires ONLY if they have a clear escape route behind them.",
-    whyWrong: {
-      0: "Incorrect — Trained associates can use extinguishers on small fires. Waiting for the fire department on a small fire could allow it to grow.",
-      1: "Incorrect — Any associate who has completed the training is authorized, not just WHS staff.",
-      3: "Incorrect — While evacuation is always the safest option, trained associates may extinguish small fires to prevent them from spreading."
-    },
-    policyRef: "WHS NA Policy: Emergency Action Plan — Fire Extinguisher Use",
-    source: "https://policy.a2z.com/docs/694396/publication"
-  },
   {
-    id: "emer-5",
-    category: "WHS - Emergency Response",
-    question: "Where can you find the location of the nearest AED and first aid kit?",
-    answers: ["Ask HR", "On the site emergency map and safety information boards", "Only WHS knows their locations", "There is only one at the front entrance"],
-    correctIndex: 1,
-    explanation: "AED and first aid kit locations are posted on site emergency maps and safety boards. Associates should know the nearest locations to their work area.",
-    whyWrong: {
-      0: "Incorrect — HR does not manage emergency equipment locations. This information is posted on safety boards and emergency maps.",
-      2: "Incorrect — AED/first aid locations are public knowledge posted throughout the site. Every associate should know where they are.",
-      3: "Incorrect — AEDs and first aid kits are distributed throughout the facility, not just at the entrance. Check your area's safety map."
-    },
-    policyRef: "WHS NA Policy: Emergency Action Plan — First Aid & AED",
-    source: "https://policy.a2z.com/docs/694396/publication"
-  },
 
   // ═══════════════════════════════════════════════════════════
   // WHS - PIT SAFETY
@@ -867,7 +796,7 @@ const SAMPLE_QUESTIONS = [
       3: "Incorrect — No exception exists for work calls. All phone use is prohibited during PIT operation regardless of the reason."
     },
     policyRef: "WHS NA Policy: PIT Safety — Electronic Device Prohibition",
-    source: "https://policy.a2z.com/docs/34220/publication"
+    source: "https://policy.a2z.com/docs/602272/publication"
   },
   {
     id: "phone-4",
@@ -995,7 +924,7 @@ const SAMPLE_QUESTIONS = [
       3: "Incorrect — 180 days exceeds the legal limit. Storing hazardous waste beyond 90 days violates EPA regulations and can result in significant fines."
     },
     policyRef: "WHS NA Policy: Hazardous Waste Management — Accumulation Time Limits",
-    source: "https://policy.a2z.com/docs/665159/publication"
+    source: "https://policy.a2z.com/docs/36595/publication"
   },
   {
     id: "hw-2",
@@ -1010,7 +939,7 @@ const SAMPLE_QUESTIONS = [
       3: "Insufficient — A building code doesn't tell responders what's in the container or what hazards it presents."
     },
     policyRef: "WHS NA Policy: Hazardous Waste Management — Container Labeling",
-    source: "https://policy.a2z.com/docs/665159/publication"
+    source: "https://policy.a2z.com/docs/36595/publication"
   },
   {
     id: "hw-3",
@@ -1025,7 +954,7 @@ const SAMPLE_QUESTIONS = [
       3: "Incorrect — You should not handle a leaking battery yourself. WHS/EHS has the proper PPE and neutralizing agents for safe cleanup."
     },
     policyRef: "WHS NA Policy: Hazardous Waste Management — Spill Response",
-    source: "https://policy.a2z.com/docs/665159/publication"
+    source: "https://policy.a2z.com/docs/36595/publication"
   },
   {
     id: "hw-4",
@@ -1040,7 +969,7 @@ const SAMPLE_QUESTIONS = [
       3: "Dangerous — Appearance tells you nothing about chemical compatibility. Chemicals that look identical can react violently when mixed."
     },
     policyRef: "WHS NA Policy: Hazardous Waste Management — Waste Segregation",
-    source: "https://policy.a2z.com/docs/665159/publication"
+    source: "https://policy.a2z.com/docs/36595/publication"
   },
   {
     id: "hw-5",
@@ -1055,7 +984,7 @@ const SAMPLE_QUESTIONS = [
       3: "Incorrect — First aid certification does not cover hazardous material identification, handling, storage, or disposal procedures."
     },
     policyRef: "WHS NA Policy: Hazardous Waste Management — Training Requirements",
-    source: "https://policy.a2z.com/docs/665159/publication"
+    source: "https://policy.a2z.com/docs/81403/publication"
   },
   {
     id: "hw-6",
@@ -1070,7 +999,7 @@ const SAMPLE_QUESTIONS = [
       3: "Incorrect — An office is not a proper accumulation area. HazWaste requires secondary containment, ventilation, and proper signage."
     },
     policyRef: "WHS NA Policy: Hazardous Waste Management — Accumulation Areas",
-    source: "https://policy.a2z.com/docs/665159/publication"
+    source: "https://policy.a2z.com/docs/36595/publication"
   },
   {
     id: "hw-7",
@@ -1085,7 +1014,7 @@ const SAMPLE_QUESTIONS = [
       3: "Dangerous — Even brief chemical exposure can cause harm. A smell that 'goes away' may mean the chemical is still present but your nose has adapted."
     },
     policyRef: "WHS NA Policy: Hazardous Waste Management — Unknown Chemical Response",
-    source: "https://policy.a2z.com/docs/665159/publication"
+    source: "https://policy.a2z.com/docs/36595/publication"
   },
 ];
 
@@ -1344,7 +1273,8 @@ class SpinWheel {
 
     if (policyRef) {
       html += `<div class="fb-policy">📋 <strong>Policy Reference:</strong> ${policyRef}`;
-      if (source) html += ` — <a href="${source}" target="_blank">View Full Policy</a>`;
+      if (source) html += `<br><a href="${source}" target="_blank">📄 View Full Policy on Amazon Policy 2.0</a>`;
+      html += `<br><a href="https://prod.na.safer.whs.amazon.dev/" target="_blank">🔍 Look up on SAFER WHS</a>`;
       html += `</div>`;
     }
 
