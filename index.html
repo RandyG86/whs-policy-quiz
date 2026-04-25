@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Amazon WHS Policy Quiz</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
   <style>
 /* ── Reset & Base ──────────────────────────────────────────── */
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -313,6 +314,56 @@ header h1 {
   #score-bar { gap: 16px; font-size: 0.95rem; }
   #question-text { font-size: 1.1rem; }
 }
+
+/* ── Metrics Button ───────────────────────────────────────── */
+.metrics-btn {
+  background: rgba(58, 134, 255, 0.15);
+  color: #3A86FF;
+  padding: 4px 14px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: background 0.2s;
+}
+.metrics-btn:hover {
+  background: rgba(58, 134, 255, 0.3);
+}
+
+/* ── Metrics Button ─────────────────────────────────────── */
+.metrics-btn {
+  background: rgba(58, 134, 255, 0.15);
+  color: #3A86FF;
+  padding: 4px 14px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  border: none;
+}
+.metrics-btn:hover { background: rgba(58, 134, 255, 0.3); }
+
+/* ── Metrics Dashboard ──────────────────────────────────── */
+.dashboard { max-width: 900px; margin: 0 auto; padding: 20px; }
+.dash-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 24px; }
+.dash-header h2 { font-size: 1.4rem; background: linear-gradient(135deg, #3A86FF, #2EC4B6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; margin-bottom: 28px; }
+.kpi-card { background: #1a1a3e; border-radius: 14px; padding: 20px; text-align: center; }
+.kpi-value { font-size: 2.2rem; font-weight: 800; margin-bottom: 4px; }
+.kpi-label { font-size: 0.85rem; color: #aaa; }
+.kpi-green { color: #2EC4B6; } .kpi-red { color: #E71D36; } .kpi-blue { color: #3A86FF; } .kpi-yellow { color: #FFBE0B; }
+.chart-card { background: #1a1a3e; border-radius: 16px; padding: 24px; margin-bottom: 24px; }
+.chart-card h3 { font-size: 1.1rem; margin-bottom: 16px; color: #ccc; font-weight: 600; }
+.chart-container { position: relative; width: 100%; max-height: 400px; }
+.no-data-msg { text-align: center; padding: 40px 20px; color: #666; font-size: 1.1rem; }
+.clear-btn { background: rgba(231,29,54,0.15); color: #E71D36; border: 1px solid #E71D36; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 0.85rem; }
+.clear-btn:hover { background: rgba(231,29,54,0.3); }
+.table-wrap { overflow-x: auto; }
+.table-wrap table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+.table-wrap th, .table-wrap td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #2a2a5a; }
+.table-wrap th { color: #aaa; font-weight: 600; }
+.pct-bar { display: inline-block; height: 8px; border-radius: 4px; background: #E71D36; }
   </style>
 </head>
 <body>
@@ -323,6 +374,7 @@ header h1 {
         <span>Score: <strong id="score">0</strong></span>
         <span>Streak: <strong id="streak">0</strong> 🔥</span>
         <span>Questions: <strong id="q-count">0</strong></span>
+        <button class="metrics-btn" onclick="showMetrics()">📊 Metrics</button>
       </div>
     </header>
     <section id="spin-screen" class="screen active">
@@ -356,6 +408,32 @@ header h1 {
         <h2>Round Complete!</h2>
         <div id="results-stats"></div>
         <button id="play-again-btn" class="btn-primary">🎡 Spin Again</button>
+        <button class="btn-secondary" onclick="showMetrics()" style="margin-top:12px;">📊 View Metrics Dashboard</button>
+      </div>
+    </section>
+    <section id="metrics-screen" class="screen">
+      <div class="dashboard">
+        <div class="dash-header">
+          <h2>📊 WHS Quiz Metrics Dashboard</h2>
+          <div>
+            <button class="metrics-btn" onclick="showQuiz()">🎯 Back to Quiz</button>
+            <button class="clear-btn" onclick="clearMetrics()">🗑️ Clear Data</button>
+          </div>
+        </div>
+        <div id="no-data" class="no-data-msg hidden">No quiz data yet. Take the quiz first!</div>
+        <div id="dash-content" class="hidden">
+          <div class="kpi-row">
+            <div class="kpi-card"><div class="kpi-value kpi-blue" id="kpi-total">0</div><div class="kpi-label">Total Answers</div></div>
+            <div class="kpi-card"><div class="kpi-value kpi-green" id="kpi-correct">0%</div><div class="kpi-label">Correct Rate</div></div>
+            <div class="kpi-card"><div class="kpi-value kpi-red" id="kpi-wrong">0</div><div class="kpi-label">Wrong Answers</div></div>
+            <div class="kpi-card"><div class="kpi-value kpi-yellow" id="kpi-improvement">—</div><div class="kpi-label">Month-over-Month Improvement</div></div>
+          </div>
+          <div class="chart-card"><h3>📈 Monthly Trend — Correct vs Wrong</h3><div class="chart-container"><canvas id="monthlyChart"></canvas></div></div>
+          <div class="chart-card"><h3>📊 Monthly Correct Answer Rate (%)</h3><div class="chart-container"><canvas id="conversionChart"></canvas></div></div>
+          <div class="chart-card"><h3>❌ Most Missed Questions (Top 15)</h3><div class="chart-container"><canvas id="missedChart"></canvas></div></div>
+          <div class="chart-card"><h3>📋 Accuracy by Category</h3><div class="chart-container"><canvas id="categoryChart"></canvas></div></div>
+          <div class="chart-card"><h3>📝 Wrong Answer Details</h3><div class="table-wrap"><table id="wrong-table"><thead><tr><th>Question</th><th>Category</th><th>Times Wrong</th><th>Times Asked</th><th>Error Rate</th></tr></thead><tbody></tbody></table></div></div>
+        </div>
       </div>
     </section>
   </div>
@@ -1030,6 +1108,48 @@ function shuffle(arr) {
   return a;
 }
 
+/* ── Metrics Tracker ─────────────────────────────────────────
+   Stores every answer in localStorage for analytics.
+   Data shape per entry:
+   {
+     timestamp: ISO string,
+     questionId: "whs-1",
+     category: "WHS - General Safety",
+     question: "What is...",
+     correct: true/false,
+     selectedIndex: 2,
+     correctIndex: 1
+   }
+──────────────────────────────────────────────────────────── */
+
+const MetricsTracker = {
+  STORAGE_KEY: "whs_quiz_metrics",
+
+  record(question, selectedIndex, isCorrect) {
+    const entries = this.getAll();
+    entries.push({
+      timestamp: new Date().toISOString(),
+      questionId: question.id,
+      category: question.category,
+      question: question.question,
+      correct: isCorrect,
+      selectedIndex: selectedIndex,
+      correctIndex: question.correctIndex
+    });
+    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(entries));
+  },
+
+  getAll() {
+    try {
+      return JSON.parse(localStorage.getItem(this.STORAGE_KEY)) || [];
+    } catch { return []; }
+  },
+
+  clear() {
+    localStorage.removeItem(this.STORAGE_KEY);
+  }
+};
+
 /* ── Spinning Wheel ──────────────────────────────────────────── */
 
 class SpinWheel {
@@ -1223,6 +1343,9 @@ class SpinWheel {
     const isCorrect = index === q.correctIndex;
     const fb = $("feedback");
 
+    // Record answer for metrics
+    MetricsTracker.record(q, index, isCorrect);
+
     if (isCorrect) {
       score += 10 + streak * 2;
       streak++;
@@ -1296,6 +1419,126 @@ class SpinWheel {
   $("play-again-btn").addEventListener("click", () => show($("spin-screen")));
   updateScore();
 })();
+
+/* ── Metrics Dashboard Logic ─────────────────────────────── */
+let chartsBuilt = false;
+const chartInstances = {};
+
+function showMetrics() {
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+  document.getElementById("metrics-screen").classList.add("active");
+  if (!chartsBuilt) buildDashboard();
+}
+
+function showQuiz() {
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+  document.getElementById("spin-screen").classList.add("active");
+}
+
+function clearMetrics() {
+  if (confirm("Clear ALL quiz metrics data? This cannot be undone.")) {
+    MetricsTracker.clear();
+    Object.values(chartInstances).forEach(c => c.destroy());
+    chartsBuilt = false;
+    buildDashboard();
+  }
+}
+
+function buildDashboard() {
+  const entries = MetricsTracker.getAll();
+  if (entries.length === 0) {
+    document.getElementById("no-data").classList.remove("hidden");
+    document.getElementById("dash-content").classList.add("hidden");
+    return;
+  }
+  document.getElementById("no-data").classList.add("hidden");
+  document.getElementById("dash-content").classList.remove("hidden");
+
+  const total = entries.length;
+  const correct = entries.filter(e => e.correct).length;
+  const wrong = total - correct;
+  document.getElementById("kpi-total").textContent = total;
+  document.getElementById("kpi-correct").textContent = Math.round((correct / total) * 100) + "%";
+  document.getElementById("kpi-wrong").textContent = wrong;
+
+  // Monthly buckets
+  const byMonth = {};
+  entries.forEach(e => {
+    const d = new Date(e.timestamp);
+    const key = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0");
+    if (!byMonth[key]) byMonth[key] = { correct: 0, wrong: 0, total: 0 };
+    byMonth[key].total++;
+    if (e.correct) byMonth[key].correct++; else byMonth[key].wrong++;
+  });
+  const months = Object.keys(byMonth).sort();
+  const monthLabels = months.map(m => { const [y, mo] = m.split("-"); return new Date(y, mo - 1).toLocaleDateString("en-US", { month: "short", year: "numeric" }); });
+
+  // MoM improvement
+  if (months.length >= 2) {
+    const prev = byMonth[months[months.length - 2]], curr = byMonth[months[months.length - 1]];
+    const diff = ((curr.correct / curr.total) - (prev.correct / prev.total)) * 100;
+    const el = document.getElementById("kpi-improvement");
+    el.textContent = (diff >= 0 ? "+" : "") + diff.toFixed(1) + "%";
+    el.className = "kpi-value " + (diff >= 0 ? "kpi-green" : "kpi-red");
+  }
+
+  // Destroy old charts
+  Object.values(chartInstances).forEach(c => c.destroy());
+  const opts = { responsive: true, plugins: { legend: { labels: { color: "#ccc" } } }, scales: { x: { ticks: { color: "#aaa" } }, y: { ticks: { color: "#aaa" }, beginAtZero: true } } };
+
+  chartInstances.monthly = new Chart(document.getElementById("monthlyChart"), {
+    type: "line", data: { labels: monthLabels, datasets: [
+      { label: "Correct", data: months.map(m => byMonth[m].correct), borderColor: "#2EC4B6", backgroundColor: "rgba(46,196,182,0.1)", fill: true, tension: 0.3 },
+      { label: "Wrong", data: months.map(m => byMonth[m].wrong), borderColor: "#E71D36", backgroundColor: "rgba(231,29,54,0.1)", fill: true, tension: 0.3 }
+    ]}, options: opts
+  });
+
+  const convData = months.map(m => Math.round((byMonth[m].correct / byMonth[m].total) * 100));
+  chartInstances.conversion = new Chart(document.getElementById("conversionChart"), {
+    type: "bar", data: { labels: monthLabels, datasets: [{ label: "Correct %", data: convData,
+      backgroundColor: convData.map((v, i) => i === 0 ? "rgba(58,134,255,0.6)" : v >= convData[i-1] ? "rgba(46,196,182,0.6)" : "rgba(231,29,54,0.6)"), borderRadius: 6
+    }]}, options: { ...opts, scales: { ...opts.scales, y: { ...opts.scales.y, max: 100, ticks: { ...opts.scales.y.ticks, callback: v => v + "%" } } } }
+  });
+
+  // Most missed
+  const qStats = {};
+  entries.forEach(e => {
+    if (!qStats[e.questionId]) qStats[e.questionId] = { question: e.question, category: e.category, wrong: 0, total: 0 };
+    qStats[e.questionId].total++;
+    if (!e.correct) qStats[e.questionId].wrong++;
+  });
+  const missed = Object.values(qStats).filter(q => q.wrong > 0).sort((a, b) => b.wrong - a.wrong).slice(0, 15);
+
+  chartInstances.missed = new Chart(document.getElementById("missedChart"), {
+    type: "bar", data: { labels: missed.map(q => q.question.length > 55 ? q.question.substring(0, 52) + "..." : q.question),
+      datasets: [{ label: "Times Wrong", data: missed.map(q => q.wrong), backgroundColor: "rgba(231,29,54,0.6)", borderRadius: 6 }]
+    }, options: { indexAxis: "y", responsive: true, plugins: { legend: { display: false } }, scales: { x: { ticks: { color: "#aaa" }, beginAtZero: true }, y: { ticks: { color: "#ccc", font: { size: 11 } } } } }
+  });
+
+  // Category breakdown
+  const catStats = {};
+  entries.forEach(e => { if (!catStats[e.category]) catStats[e.category] = { correct: 0, total: 0 }; catStats[e.category].total++; if (e.correct) catStats[e.category].correct++; });
+  const cats = Object.keys(catStats).sort();
+
+  chartInstances.category = new Chart(document.getElementById("categoryChart"), {
+    type: "bar", data: { labels: cats, datasets: [
+      { label: "Correct", data: cats.map(c => catStats[c].correct), backgroundColor: "rgba(46,196,182,0.6)", borderRadius: 6 },
+      { label: "Wrong", data: cats.map(c => catStats[c].total - catStats[c].correct), backgroundColor: "rgba(231,29,54,0.6)", borderRadius: 6 }
+    ]}, options: opts
+  });
+
+  // Table
+  const tbody = document.querySelector("#wrong-table tbody");
+  tbody.innerHTML = "";
+  Object.values(qStats).sort((a, b) => (b.wrong / b.total) - (a.wrong / a.total)).forEach(q => {
+    const rate = Math.round((q.wrong / q.total) * 100);
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td>${q.question}</td><td>${q.category}</td><td>${q.wrong}</td><td>${q.total}</td><td><span class="pct-bar" style="width:${rate}px"></span> ${rate}%</td>`;
+    tbody.appendChild(tr);
+  });
+
+  chartsBuilt = true;
+}
   </script>
 </body>
 </html>
