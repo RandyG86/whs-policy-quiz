@@ -1,0 +1,1380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Amazon WHS Policy Quiz</title>
+  <style>
+/* ── Reset & Base ──────────────────────────────────────────── */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: system-ui, -apple-system, sans-serif;
+  background: #0f0f23;
+  color: #e0e0e0;
+  min-height: 100vh;
+}
+
+#app {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* ── Header ───────────────────────────────────────────────── */
+header {
+  text-align: center;
+  padding: 20px 0;
+}
+
+header h1 {
+  font-size: 2rem;
+  background: linear-gradient(135deg, #FF6B35, #FFBE0B);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+#score-bar {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  margin-top: 12px;
+  font-size: 1.1rem;
+}
+
+#score-bar strong {
+  color: #FFBE0B;
+}
+
+/* ── Screens ──────────────────────────────────────────────── */
+.screen { display: none; }
+.screen.active { display: block; }
+
+/* ── Spin Screen ──────────────────────────────────────────── */
+#spin-screen { text-align: center; }
+#spin-screen h2 { margin-bottom: 24px; font-weight: 400; }
+
+#wheel-container {
+  position: relative;
+  display: inline-block;
+  margin-bottom: 24px;
+}
+
+#wheel-pointer {
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 2rem;
+  color: #FFBE0B;
+  z-index: 10;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+}
+
+#wheel {
+  border-radius: 50%;
+  box-shadow: 0 0 40px rgba(255, 107, 53, 0.3);
+}
+
+#selected-category {
+  margin-top: 20px;
+  font-size: 1.2rem;
+}
+
+#selected-category strong {
+  font-size: 1.4rem;
+}
+
+.hidden { display: none !important; }
+
+/* ── Buttons ──────────────────────────────────────────────── */
+.btn-primary {
+  background: linear-gradient(135deg, #FF6B35, #E71D36);
+  color: #fff;
+  border: none;
+  padding: 14px 36px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+  margin: 8px;
+}
+
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 107, 53, 0.4);
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  background: transparent;
+  color: #FFBE0B;
+  border: 2px solid #FFBE0B;
+  padding: 12px 28px;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background 0.2s;
+  margin: 8px;
+}
+
+.btn-secondary:hover {
+  background: rgba(255, 190, 11, 0.1);
+}
+
+/* ── Quiz Screen ──────────────────────────────────────────── */
+#quiz-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+#quiz-category-badge {
+  padding: 6px 16px;
+  border-radius: 20px;
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+#quiz-progress {
+  margin-left: auto;
+  font-size: 1rem;
+  color: #aaa;
+}
+
+#timer-bar {
+  width: 100%;
+  height: 6px;
+  background: #1a1a3e;
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+#timer-fill {
+  height: 100%;
+  width: 100%;
+  border-radius: 3px;
+  transition: width 0.1s linear, background 0.3s;
+}
+
+#question-card {
+  background: #1a1a3e;
+  border-radius: 16px;
+  padding: 28px;
+  margin-bottom: 20px;
+}
+
+#question-text {
+  font-size: 1.25rem;
+  line-height: 1.5;
+  margin-bottom: 24px;
+}
+
+#answers {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.answer-btn {
+  background: #252550;
+  color: #e0e0e0;
+  border: 2px solid #3a3a6e;
+  padding: 14px 20px;
+  font-size: 1rem;
+  border-radius: 12px;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.answer-btn:hover:not(:disabled) {
+  border-color: #FFBE0B;
+  background: #2a2a5a;
+}
+
+.answer-btn:disabled {
+  cursor: default;
+}
+
+.answer-btn.correct {
+  border-color: #2EC4B6;
+  background: rgba(46, 196, 182, 0.15);
+  color: #2EC4B6;
+  font-weight: 700;
+}
+
+.answer-btn.wrong {
+  border-color: #E71D36;
+  background: rgba(231, 29, 54, 0.15);
+  color: #E71D36;
+}
+
+/* ── Feedback ─────────────────────────────────────────────── */
+#feedback {
+  padding: 20px 24px;
+  border-radius: 12px;
+  font-size: 1rem;
+  line-height: 1.6;
+  margin-bottom: 16px;
+}
+
+#feedback a {
+  color: #3A86FF;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.feedback-correct {
+  background: rgba(46, 196, 182, 0.1);
+  border: 1px solid #2EC4B6;
+}
+
+.feedback-wrong {
+  background: rgba(231, 29, 54, 0.1);
+  border: 1px solid #E71D36;
+}
+
+.fb-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.fb-why-wrong {
+  background: rgba(231, 29, 54, 0.15);
+  border-left: 4px solid #E71D36;
+  padding: 10px 14px;
+  border-radius: 6px;
+  margin-bottom: 12px;
+}
+
+.fb-explanation {
+  background: rgba(46, 196, 182, 0.1);
+  border-left: 4px solid #2EC4B6;
+  padding: 10px 14px;
+  border-radius: 6px;
+  margin-bottom: 12px;
+}
+
+.fb-policy {
+  background: rgba(58, 134, 255, 0.1);
+  border-left: 4px solid #3A86FF;
+  padding: 10px 14px;
+  border-radius: 6px;
+  font-size: 0.95rem;
+}
+
+/* ── Results ──────────────────────────────────────────────── */
+#results-screen { text-align: center; }
+
+#results-card {
+  background: #1a1a3e;
+  border-radius: 20px;
+  padding: 40px;
+  margin-top: 20px;
+}
+
+#results-card h2 {
+  font-size: 1.8rem;
+  margin-bottom: 24px;
+}
+
+.result-big {
+  font-size: 4rem;
+  font-weight: 800;
+  margin-bottom: 16px;
+  background: linear-gradient(135deg, #FFBE0B, #FF6B35);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+#results-stats p {
+  font-size: 1.1rem;
+  margin: 8px 0;
+}
+
+/* ── Responsive ───────────────────────────────────────────── */
+@media (max-width: 500px) {
+  #wheel { width: 300px; height: 300px; }
+  header h1 { font-size: 1.5rem; }
+  #score-bar { gap: 16px; font-size: 0.95rem; }
+  #question-text { font-size: 1.1rem; }
+}
+  </style>
+</head>
+<body>
+  <div id="app">
+    <header>
+      <h1>🎯 Amazon WHS Policy Quiz</h1>
+      <div id="score-bar">
+        <span>Score: <strong id="score">0</strong></span>
+        <span>Streak: <strong id="streak">0</strong> 🔥</span>
+        <span>Questions: <strong id="q-count">0</strong></span>
+      </div>
+    </header>
+    <section id="spin-screen" class="screen active">
+      <h2>Spin the wheel to pick a policy category!</h2>
+      <div id="wheel-container">
+        <div id="wheel-pointer">▼</div>
+        <canvas id="wheel" width="400" height="400"></canvas>
+      </div>
+      <button id="spin-btn" class="btn-primary">🎰 SPIN THE WHEEL</button>
+      <div id="selected-category" class="hidden">
+        <p>Category: <strong id="cat-name"></strong></p>
+        <button id="start-quiz-btn" class="btn-primary">Start Quiz →</button>
+      </div>
+    </section>
+    <section id="quiz-screen" class="screen">
+      <div id="quiz-header">
+        <span id="quiz-category-badge"></span>
+        <span id="quiz-progress"></span>
+        <div id="timer-bar"><div id="timer-fill"></div></div>
+      </div>
+      <div id="question-card">
+        <p id="question-text"></p>
+        <div id="answers"></div>
+      </div>
+      <div id="feedback" class="hidden"></div>
+      <button id="next-btn" class="btn-primary hidden">Next Question →</button>
+      <button id="back-to-wheel" class="btn-secondary hidden">🎡 Spin Again</button>
+    </section>
+    <section id="results-screen" class="screen">
+      <div id="results-card">
+        <h2>Round Complete!</h2>
+        <div id="results-stats"></div>
+        <button id="play-again-btn" class="btn-primary">🎡 Spin Again</button>
+      </div>
+    </section>
+  </div>
+  <script>
+/* ============================================================
+   DATA LAYER — Amazon NA WHS Policy Quiz
+
+   All categories connect to WHS (Workplace Health & Safety).
+   Every question references a specific WHS policy area.
+
+   HOW TO CONNECT THE AMAZON WIKI API:
+   Replace `fetchQuestionsFromAPI()` (~line bottom) with your
+   actual API call. Return array of objects matching this shape:
+
+   {
+     id: "unique-id",
+     category: "WHS - General Safety",
+     question: "What is the ...",
+     answers: ["A", "B", "C", "D"],
+     correctIndex: 0,
+     explanation: "Per WHS policy ...",
+     whyWrong: {
+       0: "Reason this choice is wrong...",
+       1: "Reason this choice is wrong...",
+       // (skip the correct index)
+       3: "Reason this choice is wrong..."
+     },
+     policyRef: "WHS NA SOP-1234: Section Name",
+     source: "https://w.amazon.com/..."
+   }
+   ============================================================ */
+
+const CATEGORIES = [
+  { name: "WHS - General Safety",      color: "#E71D36" },
+  { name: "WHS - Ergonomics & TPS",    color: "#FF6B35" },
+  { name: "WHS - Emergency Response",   color: "#D90429" },
+  { name: "WHS - PIT Safety",          color: "#3A86FF" },
+  { name: "WHS - Phone & Headphones",  color: "#7209B7" },
+  { name: "WHS - Parking Lot Safety",  color: "#2EC4B6" },
+  { name: "WHS - HazWaste",            color: "#06D6A0" },
+];
+
+const SAMPLE_QUESTIONS = [
+
+  // ═══════════════════════════════════════════════════════════
+  // WHS - GENERAL SAFETY
+  // ═══════════════════════════════════════════════════════════
+  {
+    id: "whs-1",
+    category: "WHS - General Safety",
+    question: "What is Amazon's 'Stop Work Authority' policy?",
+    answers: ["Only managers can stop unsafe work", "Any associate can stop work if they believe conditions are unsafe", "Work can only be stopped by WHS staff", "You need written approval to stop work"],
+    correctIndex: 1,
+    explanation: "Every Amazon associate has Stop Work Authority — the right and responsibility to stop any task they believe is unsafe, without fear of retaliation.",
+    whyWrong: {
+      0: "Incorrect — Stop Work Authority is NOT limited to managers. Every associate at every level has this right.",
+      2: "Incorrect — While WHS supports safety, the authority to stop unsafe work belongs to ALL associates, not just WHS staff.",
+      3: "Incorrect — No written approval is needed. Associates can and should stop work immediately when they see an unsafe condition."
+    },
+    policyRef: "WHS NA Policy: Stop Work Authority",
+    source: ""
+  },
+  {
+    id: "whs-2",
+    category: "WHS - General Safety",
+    question: "What is the first action when you witness a safety incident on the floor?",
+    answers: ["Continue working and report at end of shift", "Stop and ensure the area is safe, then call for help", "Find your manager before doing anything", "Take a photo and email WHS"],
+    correctIndex: 1,
+    explanation: "Stop work immediately, ensure the area is safe, assist the injured if trained to do so, and notify leadership and WHS right away.",
+    whyWrong: {
+      0: "Dangerous — Delaying a report could allow the hazard to injure others and delays medical attention for the injured associate.",
+      2: "Incorrect — Searching for a manager wastes critical time. Secure the scene first, then notify leadership.",
+      3: "Incorrect — Taking photos delays the response. Scene safety and getting help are the immediate priorities."
+    },
+    policyRef: "WHS NA Policy: Incident Response & Reporting",
+    source: ""
+  },
+  {
+    id: "whs-3",
+    category: "WHS - General Safety",
+    question: "What is the required minimum PPE on the warehouse floor in most NA FCs?",
+    answers: ["Steel-toe boots only", "Safety vest and closed-toe shoes", "Hard hat and gloves", "No PPE required in standard areas"],
+    correctIndex: 1,
+    explanation: "Associates must wear a high-visibility safety vest and closed-toe shoes at minimum. Additional PPE is required in specific areas (e.g., HazWaste, PIT zones).",
+    whyWrong: {
+      0: "Incomplete — Steel-toe boots may be required in some areas, but a safety vest is always required for visibility on the floor.",
+      2: "Incorrect — Hard hats and gloves are only required in specific zones (e.g., construction, HazWaste), not as general floor PPE.",
+      3: "Incorrect — PPE is always required on the warehouse floor. A safety vest ensures you are visible to PIT operators and other associates."
+    },
+    policyRef: "WHS NA Policy: Personal Protective Equipment (PPE)",
+    source: ""
+  },
+  {
+    id: "whs-4",
+    category: "WHS - General Safety",
+    question: "How should near-miss incidents be reported?",
+    answers: ["Only if someone was actually hurt", "Through the site's incident reporting system immediately", "Verbally to a coworker", "At the next safety stand-down meeting"],
+    correctIndex: 1,
+    explanation: "Near-misses must be reported immediately through the incident reporting system. They are critical for identifying hazards before injuries occur.",
+    whyWrong: {
+      0: "Incorrect — Near-misses are reported precisely BECAUSE no one was hurt yet. They prevent future injuries by identifying hazards early.",
+      2: "Insufficient — Verbal reports to coworkers are not tracked and cannot be investigated. Formal reporting is required.",
+      3: "Too late — Waiting for a stand-down delays hazard identification. The same hazard could injure someone before the next meeting."
+    },
+    policyRef: "WHS NA Policy: Incident & Near-Miss Reporting",
+    source: ""
+  },
+  {
+    id: "whs-5",
+    category: "WHS - General Safety",
+    question: "What is the maximum weight an associate should lift alone per WHS guidelines?",
+    answers: ["75 lbs", "50 lbs", "30 lbs", "No limit if you've been trained"],
+    correctIndex: 1,
+    explanation: "The WHS guideline is 50 lbs maximum for individual lifts. Anything heavier requires a team lift or mechanical assistance.",
+    whyWrong: {
+      0: "Incorrect — 75 lbs far exceeds the safe individual lift limit and creates serious risk of back, shoulder, and knee injuries.",
+      2: "While being cautious is good, the WHS standard for individual lifts is 50 lbs, not 30 lbs.",
+      3: "Incorrect — Training does not change human physical limits. The 50 lb threshold exists regardless of experience level."
+    },
+    policyRef: "WHS NA Policy: Manual Material Handling",
+    source: ""
+  },
+  {
+    id: "whs-6",
+    category: "WHS - General Safety",
+    question: "What is a 'Safety Stand-Down' at Amazon NA sites?",
+    answers: ["A disciplinary meeting for safety violations", "A brief team safety discussion held at the start or during a shift", "An annual safety audit by corporate", "A fire drill"],
+    correctIndex: 1,
+    explanation: "Safety Stand-Downs are brief pre-shift or mid-shift meetings where leadership discusses safety topics, recent incidents, seasonal hazards, and reminders.",
+    whyWrong: {
+      0: "Incorrect — Stand-Downs are educational and proactive, not disciplinary. They are a positive safety communication tool.",
+      2: "Incorrect — Stand-Downs happen regularly (often daily), not annually. They are led by site leadership, not corporate auditors.",
+      3: "Incorrect — Fire drills are separate emergency preparedness exercises. Stand-Downs are discussion-based safety briefings."
+    },
+    policyRef: "WHS NA Policy: Safety Communication & Stand-Downs",
+    source: ""
+  },
+  {
+    id: "whs-7",
+    category: "WHS - General Safety",
+    question: "What should you do if you see a blocked emergency exit?",
+    answers: ["Move the obstruction yourself", "Report it immediately to WHS or site leadership", "Use a different exit and ignore it", "Wait for facilities to notice"],
+    correctIndex: 1,
+    explanation: "Blocked emergency exits are a critical life-safety violation. Report immediately — do not attempt to move heavy obstructions yourself as that creates additional risk.",
+    whyWrong: {
+      0: "Risky — Moving heavy obstructions alone could cause injury. Report it so it can be cleared safely and the root cause addressed.",
+      2: "Dangerous — Ignoring a blocked exit puts everyone at risk. In an emergency, that exit may be someone's only escape route.",
+      3: "Unacceptable — Every minute a fire exit is blocked is a minute someone's life could be at risk. Immediate reporting is required."
+    },
+    policyRef: "WHS NA Policy: Emergency Egress & Life Safety",
+    source: ""
+  },
+
+  // ═══════════════════════════════════════════════════════════
+  // WHS - ERGONOMICS & TPS (Tilt Push Slide)
+  // ═══════════════════════════════════════════════════════════
+  {
+    id: "tps-1",
+    category: "WHS - Ergonomics & TPS",
+    question: "What does TPS stand for in Amazon WHS ergonomic training?",
+    answers: ["Task Performance Standard", "Tilt Push Slide", "Total Package Safety", "Trained Physical Standards"],
+    correctIndex: 1,
+    explanation: "TPS stands for Tilt, Push, Slide — the safe body mechanics technique for moving packages without lifting, reducing strain on the back and shoulders.",
+    whyWrong: {
+      0: "Incorrect — That is not a WHS ergonomic term. TPS in the safety context refers to the body mechanics technique: Tilt, Push, Slide.",
+      2: "Incorrect — TPS specifically describes a physical movement technique: Tilt the package, Push it, and Slide it into position.",
+      3: "Incorrect — TPS is a specific ergonomic handling method (Tilt, Push, Slide), not a training certification."
+    },
+    policyRef: "WHS NA Policy: Ergonomic Body Mechanics — TPS Method",
+    source: ""
+  },
+  {
+    id: "tps-2",
+    category: "WHS - Ergonomics & TPS",
+    question: "When should you use the TPS (Tilt Push Slide) technique?",
+    answers: ["Only for packages over 50 lbs", "When moving packages across surfaces to avoid unnecessary lifting", "Only on conveyor belts", "Only during peak season"],
+    correctIndex: 1,
+    explanation: "TPS should be used whenever you can move a package across a surface instead of lifting it. Tilt the package on edge, push it along the surface, and slide it into position.",
+    whyWrong: {
+      0: "Incorrect — TPS should be used for packages of ALL weights. Even light packages cause strain over thousands of repetitions per shift.",
+      2: "Incorrect — TPS applies to any flat surface: tables, shelves, carts, and conveyors. It's not limited to conveyor belts.",
+      3: "Incorrect — TPS is a year-round ergonomic practice, not a seasonal technique. Consistent use prevents cumulative injuries."
+    },
+    policyRef: "WHS NA Policy: Ergonomic Body Mechanics — TPS Method",
+    source: ""
+  },
+  {
+    id: "tps-3",
+    category: "WHS - Ergonomics & TPS",
+    question: "What is the correct sequence of the TPS technique?",
+    answers: ["Push, Tilt, Slide", "Slide, Push, Tilt", "Tilt, Push, Slide", "Tilt, Slide, Push"],
+    correctIndex: 2,
+    explanation: "The correct sequence is: TILT the package onto its edge to break surface friction, PUSH it across the surface, and SLIDE it into its final position.",
+    whyWrong: {
+      0: "Incorrect order — You must Tilt first to break the package's flat contact with the surface before you can push it efficiently.",
+      1: "Incorrect order — Sliding first without tilting requires more force and increases strain. Tilt first to reduce friction.",
+      3: "Close but incorrect — After tilting, you Push to move the package across the distance, then Slide for final positioning."
+    },
+    policyRef: "WHS NA Policy: Ergonomic Body Mechanics — TPS Method",
+    source: ""
+  },
+  {
+    id: "tps-4",
+    category: "WHS - Ergonomics & TPS",
+    question: "Why is the 'Tilt' step important in TPS?",
+    answers: ["It makes the package lighter", "It reduces the surface contact area, decreasing friction and the force needed to move the package", "It's just for show", "It helps you see the label"],
+    correctIndex: 1,
+    explanation: "Tilting the package onto its edge reduces the contact area with the surface, which dramatically decreases friction and the physical force required to move it.",
+    whyWrong: {
+      0: "Incorrect — Tilting doesn't change the weight. It reduces friction by decreasing the surface area in contact, making it easier to push.",
+      2: "Incorrect — Every step of TPS has an ergonomic purpose. Tilting is the critical first step that makes the rest of the technique work.",
+      3: "Incorrect — The purpose of tilting is biomechanical, not visual. It reduces the force your body needs to exert."
+    },
+    policyRef: "WHS NA Policy: Ergonomic Body Mechanics — TPS Method",
+    source: ""
+  },
+  {
+    id: "tps-5",
+    category: "WHS - Ergonomics & TPS",
+    question: "What is the 'Power Zone' for lifting?",
+    answers: ["Above your head", "Between mid-thigh and mid-chest", "Below your knees", "At full arm extension"],
+    correctIndex: 1,
+    explanation: "The Power Zone is between mid-thigh and mid-chest — where your body has the most strength and the least risk of injury. Always lift within this zone.",
+    whyWrong: {
+      0: "Dangerous — Lifting above your head puts extreme stress on shoulders, back, and spine. This is outside the Power Zone.",
+      2: "Incorrect — Below the knees forces deep bending that strains the lower back. Use mechanical aids or team lifts for floor-level items.",
+      3: "Incorrect — Extended arms create a long lever that multiplies force on your back. Keep loads close to your body in the Power Zone."
+    },
+    policyRef: "WHS NA Policy: Ergonomic Body Mechanics — Power Zone",
+    source: ""
+  },
+  {
+    id: "tps-6",
+    category: "WHS - Ergonomics & TPS",
+    question: "How often should associates rotate tasks to reduce repetitive strain injuries?",
+    answers: ["Every 4 hours", "Every 2 hours or as directed by site WHS policy", "Once per shift", "Only when they feel pain"],
+    correctIndex: 1,
+    explanation: "WHS recommends task rotation every 2 hours to reduce repetitive motion injuries. Waiting until you feel pain means damage has already started.",
+    whyWrong: {
+      0: "Too long — 4 hours of repetitive motion significantly increases injury risk. WHS guidelines recommend rotation every 2 hours.",
+      2: "Insufficient — Once per shift means up to 10 hours of the same repetitive motion, which is a major injury risk factor.",
+      3: "Dangerous — Pain is a late indicator of injury. By the time you feel pain, soft tissue damage has already occurred. Prevention through rotation is key."
+    },
+    policyRef: "WHS NA Policy: Ergonomic Task Rotation",
+    source: ""
+  },
+  {
+    id: "tps-7",
+    category: "WHS - Ergonomics & TPS",
+    question: "What should you do if a package is too heavy or awkward to handle alone?",
+    answers: ["Try your best and lift carefully", "Request a team lift or use mechanical assistance", "Leave it for the next shift", "Drag it to the destination"],
+    correctIndex: 1,
+    explanation: "Never attempt to handle a package beyond your capability. Request a team lift (2+ people) or use mechanical aids like carts, dollies, or PIT equipment.",
+    whyWrong: {
+      0: "Dangerous — 'Trying your best' with an overweight load is how serious back injuries happen. Always get help.",
+      2: "Incorrect — Leaving it doesn't solve the problem and creates a hazard for others. Get proper assistance now.",
+      3: "Dangerous — Dragging puts extreme strain on your back, shoulders, and knees, and can damage the package and floor."
+    },
+    policyRef: "WHS NA Policy: Manual Material Handling & Team Lifts",
+    source: ""
+  },
+  {
+    id: "tps-8",
+    category: "WHS - Ergonomics & TPS",
+    question: "What is the correct technique for pushing a heavy cart per WHS guidelines?",
+    answers: ["Pull it toward you for better control", "Push with your legs, keeping arms close to your body and back straight", "Lean your full body weight into it", "Use one hand so the other is free"],
+    correctIndex: 1,
+    explanation: "Push (never pull) using leg power, keep arms close to your body, maintain a straight back, and ensure you can see over/around the load.",
+    whyWrong: {
+      0: "Incorrect — Pulling puts your back in a vulnerable twisted position and you can't see where you're going. Always push.",
+      2: "Incorrect — Leaning in with body weight removes your ability to stop or steer. Use controlled leg power instead.",
+      3: "Dangerous — One-handed pushing creates uneven force that twists your spine. Always use both hands for control and even force distribution."
+    },
+    policyRef: "WHS NA Policy: Ergonomic Body Mechanics — Push/Pull",
+    source: ""
+  },
+
+  // ═══════════════════════════════════════════════════════════
+  // WHS - EMERGENCY RESPONSE
+  // ═══════════════════════════════════════════════════════════
+  {
+    id: "emer-1",
+    category: "WHS - Emergency Response",
+    question: "What should you do when the fire alarm sounds?",
+    answers: ["Finish your current task then evacuate", "Immediately stop work and evacuate to your designated assembly point", "Wait for manager instructions", "Call 911 before leaving"],
+    correctIndex: 1,
+    explanation: "When the fire alarm sounds, stop work immediately, leave all belongings, and proceed to your designated assembly point. Do not use elevators.",
+    whyWrong: {
+      0: "Dangerous — Every second counts in a fire. No task is worth risking your life. Stop immediately and evacuate.",
+      2: "Incorrect — Do not wait for anyone. The alarm IS the instruction. Evacuate immediately using the nearest safe exit.",
+      3: "Incorrect — Calling 911 delays your evacuation. The alarm system automatically alerts emergency services. Get out first."
+    },
+    policyRef: "WHS NA Policy: Emergency Action Plan — Fire Evacuation",
+    source: ""
+  },
+  {
+    id: "emer-2",
+    category: "WHS - Emergency Response",
+    question: "What does 'RACE' stand for in fire emergency response?",
+    answers: ["Run, Alert, Cover, Escape", "Rescue, Alarm, Contain, Extinguish/Evacuate", "Report, Assess, Call, Exit", "React, Assist, Control, Eliminate"],
+    correctIndex: 1,
+    explanation: "RACE: Rescue anyone in immediate danger, sound the Alarm, Contain the fire by closing doors, Extinguish if small and safe to do so or Evacuate.",
+    whyWrong: {
+      0: "Incorrect — 'Run' is not the first step. You first check if anyone needs Rescue, then sound the Alarm.",
+      2: "Incorrect — The correct acronym prioritizes Rescue first, not Reporting. People's safety comes before documentation.",
+      3: "Incorrect — The standard fire response acronym used in WHS training is RACE: Rescue, Alarm, Contain, Extinguish/Evacuate."
+    },
+    policyRef: "WHS NA Policy: Emergency Action Plan — Fire Response (RACE)",
+    source: ""
+  },
+  {
+    id: "emer-3",
+    category: "WHS - Emergency Response",
+    question: "During a tornado warning at an Amazon FC, where should associates shelter?",
+    answers: ["Near windows to monitor the storm", "Designated interior shelter areas away from exterior walls and windows", "The parking lot to drive away", "Under their workstation"],
+    correctIndex: 1,
+    explanation: "Move to designated interior shelter areas (usually interior rooms or hallways on the lowest floor), away from all windows, exterior walls, and large open roof spans.",
+    whyWrong: {
+      0: "Extremely dangerous — Windows shatter in tornadoes and become deadly projectiles. Stay as far from windows as possible.",
+      2: "Dangerous — Vehicles are extremely unsafe in tornadoes. The parking lot is one of the worst places to be.",
+      3: "Insufficient — Workstations near exterior walls or under large roof spans are not safe. Move to designated interior shelter areas."
+    },
+    policyRef: "WHS NA Policy: Emergency Action Plan — Severe Weather",
+    source: ""
+  },
+  {
+    id: "emer-4",
+    category: "WHS - Emergency Response",
+    question: "Who is authorized to use a fire extinguisher at an Amazon site?",
+    answers: ["Only the fire department", "Only WHS staff", "Any trained associate, but only on small fires with a clear escape route", "No one — always evacuate immediately"],
+    correctIndex: 2,
+    explanation: "Associates who have completed fire extinguisher training may use one on small, contained fires ONLY if they have a clear escape route behind them.",
+    whyWrong: {
+      0: "Incorrect — Trained associates can use extinguishers on small fires. Waiting for the fire department on a small fire could allow it to grow.",
+      1: "Incorrect — Any associate who has completed the training is authorized, not just WHS staff.",
+      3: "Incorrect — While evacuation is always the safest option, trained associates may extinguish small fires to prevent them from spreading."
+    },
+    policyRef: "WHS NA Policy: Emergency Action Plan — Fire Extinguisher Use",
+    source: ""
+  },
+  {
+    id: "emer-5",
+    category: "WHS - Emergency Response",
+    question: "Where can you find the location of the nearest AED and first aid kit?",
+    answers: ["Ask HR", "On the site emergency map and safety information boards", "Only WHS knows their locations", "There is only one at the front entrance"],
+    correctIndex: 1,
+    explanation: "AED and first aid kit locations are posted on site emergency maps and safety boards. Associates should know the nearest locations to their work area.",
+    whyWrong: {
+      0: "Incorrect — HR does not manage emergency equipment locations. This information is posted on safety boards and emergency maps.",
+      2: "Incorrect — AED/first aid locations are public knowledge posted throughout the site. Every associate should know where they are.",
+      3: "Incorrect — AEDs and first aid kits are distributed throughout the facility, not just at the entrance. Check your area's safety map."
+    },
+    policyRef: "WHS NA Policy: Emergency Action Plan — First Aid & AED",
+    source: ""
+  },
+
+  // ═══════════════════════════════════════════════════════════
+  // WHS - PIT SAFETY
+  // ═══════════════════════════════════════════════════════════
+  {
+    id: "pit-1",
+    category: "WHS - PIT Safety",
+    question: "What does PIT stand for?",
+    answers: ["Powered Industrial Truck", "Personal Industrial Transport", "Pallet Inventory Tracker", "Powered Internal Transporter"],
+    correctIndex: 0,
+    explanation: "PIT stands for Powered Industrial Truck — including forklifts, order pickers, pallet jacks, tuggers, and other powered material handling equipment.",
+    whyWrong: {
+      1: "Incorrect — PIT refers to Powered Industrial Truck, the OSHA and WHS standard term for powered material handling equipment.",
+      2: "Incorrect — PIT is not an inventory system. It refers to physical powered equipment like forklifts and pallet jacks.",
+      3: "Incorrect — The correct term is Powered Industrial Truck, the standard industry and WHS classification."
+    },
+    policyRef: "WHS NA Policy: PIT Safety Program",
+    source: ""
+  },
+  {
+    id: "pit-2",
+    category: "WHS - PIT Safety",
+    question: "What must an associate have before operating any PIT equipment?",
+    answers: ["Manager's verbal approval", "Valid PIT certification for that specific equipment type", "At least 6 months of employment", "Just a safety vest"],
+    correctIndex: 1,
+    explanation: "Associates must hold a valid, current PIT certification for the specific type of equipment they are operating. No exceptions — this is an OSHA requirement.",
+    whyWrong: {
+      0: "Insufficient — Verbal approval does not replace certification. OSHA requires documented training and evaluation for each PIT type.",
+      2: "Incorrect — Tenure does not qualify someone to operate PIT. Only completing the certification program for that specific equipment type does.",
+      3: "Incorrect — A safety vest is required PPE but does not authorize PIT operation. Formal certification is mandatory."
+    },
+    policyRef: "WHS NA Policy: PIT Certification & Authorization",
+    source: ""
+  },
+  {
+    id: "pit-3",
+    category: "WHS - PIT Safety",
+    question: "What is required before operating a PIT at the start of each shift?",
+    answers: ["Just turn it on and go", "Complete a pre-operation safety inspection checklist", "Check the fuel level only", "Ask a coworker if it was working last shift"],
+    correctIndex: 1,
+    explanation: "A documented pre-operation inspection must be completed every shift. This includes brakes, steering, horn, lights, tires, forks, fluid levels, and safety devices.",
+    whyWrong: {
+      0: "Dangerous — Skipping the inspection means you could operate equipment with failed brakes, steering, or other critical safety systems.",
+      2: "Insufficient — Fuel is just one of many items. Brakes, steering, horn, lights, and safety devices must all be checked.",
+      3: "Insufficient — Conditions can change between shifts. A fresh documented inspection is required every time."
+    },
+    policyRef: "WHS NA Policy: PIT Pre-Operation Inspection",
+    source: ""
+  },
+  {
+    id: "pit-4",
+    category: "WHS - PIT Safety",
+    question: "What is the speed limit for PIT equipment in pedestrian areas?",
+    answers: ["15 mph", "Walking speed (approximately 3-5 mph)", "10 mph", "No speed limit if the horn is used"],
+    correctIndex: 1,
+    explanation: "PIT equipment must travel at walking speed in pedestrian areas. Always yield to pedestrians and sound the horn at intersections and blind corners.",
+    whyWrong: {
+      0: "Far too fast — 15 mph in a pedestrian area is extremely dangerous. A PIT at that speed cannot stop in time to avoid a person.",
+      2: "Too fast — 10 mph is unsafe around pedestrians. Walking speed (3-5 mph) is the WHS standard for pedestrian zones.",
+      3: "Incorrect — A horn does not replace speed control. Pedestrians may not hear or react in time. Speed must be reduced regardless."
+    },
+    policyRef: "WHS NA Policy: PIT Operating Speed & Pedestrian Safety",
+    source: ""
+  },
+  {
+    id: "pit-5",
+    category: "WHS - PIT Safety",
+    question: "What should a PIT operator do when approaching a blind intersection?",
+    answers: ["Speed up to clear it quickly", "Stop completely, sound the horn, and proceed slowly", "Flash headlights and continue", "Assume the path is clear if no one is visible"],
+    correctIndex: 1,
+    explanation: "At blind intersections: stop completely, sound the horn, look in all directions, and proceed slowly. Never assume the path is clear.",
+    whyWrong: {
+      0: "Extremely dangerous — Speeding through a blind intersection is one of the leading causes of PIT-pedestrian incidents.",
+      2: "Insufficient — Headlights alone don't alert pedestrians around a corner. A full stop and horn are required.",
+      3: "Dangerous — The entire point of a 'blind' intersection is that you CANNOT see what's coming. Never assume it's clear."
+    },
+    policyRef: "WHS NA Policy: PIT Intersection Safety",
+    source: ""
+  },
+  {
+    id: "pit-6",
+    category: "WHS - PIT Safety",
+    question: "When traveling with a load on a forklift, how should the forks be positioned?",
+    answers: ["Raised high for better visibility", "Tilted back and lowered 4-6 inches from the floor", "Level with the ground", "Fully lowered touching the floor"],
+    correctIndex: 1,
+    explanation: "Forks should be tilted slightly back for load stability and lowered 4-6 inches from the floor to maintain a low center of gravity while clearing floor obstacles.",
+    whyWrong: {
+      0: "Dangerous — A raised load raises the center of gravity, making the forklift unstable and prone to tipping, especially during turns.",
+      2: "Incorrect — Level forks don't secure the load. A slight backward tilt keeps the load against the backrest for stability.",
+      3: "Incorrect — Forks touching the floor will scrape and catch on uneven surfaces, creating a tripping hazard and damaging the floor."
+    },
+    policyRef: "WHS NA Policy: PIT Load Handling & Travel",
+    source: ""
+  },
+  {
+    id: "pit-7",
+    category: "WHS - PIT Safety",
+    question: "What is the safe following distance behind another PIT?",
+    answers: ["1 truck length", "At least 3 truck lengths", "As close as needed in traffic", "2 feet"],
+    correctIndex: 1,
+    explanation: "Maintain at least 3 truck lengths between your PIT and the one ahead. This provides adequate stopping distance if the lead PIT stops suddenly.",
+    whyWrong: {
+      0: "Too close — 1 truck length does not provide enough stopping distance, especially when carrying a load.",
+      2: "Dangerous — Following too closely is a leading cause of PIT-on-PIT collisions. Always maintain safe following distance.",
+      3: "Extremely dangerous — 2 feet provides zero reaction time. A loaded PIT cannot stop in 2 feet at any speed."
+    },
+    policyRef: "WHS NA Policy: PIT Safe Following Distance",
+    source: ""
+  },
+
+  // ═══════════════════════════════════════════════════════════
+  // WHS - PHONE & HEADPHONES
+  // ═══════════════════════════════════════════════════════════
+  {
+    id: "phone-1",
+    category: "WHS - Phone & Headphones",
+    question: "Why are headphones and earbuds prohibited on the warehouse floor per WHS policy?",
+    answers: ["They damage hearing over time", "They block critical safety alerts: PIT horns, backup alarms, fire alarms, and verbal warnings", "They slow down productivity", "They are not prohibited"],
+    correctIndex: 1,
+    explanation: "Headphones block auditory safety cues that protect your life — PIT horns, backup alarms, fire alarms, emergency announcements, and coworker warnings.",
+    whyWrong: {
+      0: "While hearing protection is important, the WHS reason for the ban is that headphones block critical safety alerts you need to hear.",
+      2: "Incorrect — The prohibition is purely a safety issue, not a productivity concern. Associates must hear safety alerts at all times.",
+      3: "Incorrect — Headphones and earbuds ARE prohibited on the warehouse floor per WHS policy due to the safety risks they create."
+    },
+    policyRef: "WHS NA Policy: Electronic Device Safety — Headphones/Earbuds",
+    source: ""
+  },
+  {
+    id: "phone-2",
+    category: "WHS - Phone & Headphones",
+    question: "Is it safe to use your phone while walking through PIT traffic lanes?",
+    answers: ["Yes, if you're quick", "No — distracted walking in PIT zones is a serious safety hazard", "Only for maps or directions", "Yes, if PIT operators can see you"],
+    correctIndex: 1,
+    explanation: "Phone use while walking in PIT zones creates distracted walking — you cannot see or hear approaching equipment. This is a leading cause of pedestrian-PIT near-misses.",
+    whyWrong: {
+      0: "Incorrect — There is no safe amount of distracted walking in PIT zones. Even a few seconds of distraction can result in a collision.",
+      2: "Incorrect — Any phone use while walking in PIT zones diverts your attention from your surroundings. Stop walking to use your phone.",
+      3: "Incorrect — You cannot rely on PIT operators to see you. Pedestrian safety requires YOUR full attention to your surroundings."
+    },
+    policyRef: "WHS NA Policy: Pedestrian Safety in PIT Zones",
+    source: ""
+  },
+  {
+    id: "phone-3",
+    category: "WHS - Phone & Headphones",
+    question: "When is it acceptable to use your phone while operating PIT equipment?",
+    answers: ["When stopped at an intersection", "With a hands-free device", "Never — phone use is prohibited while operating PIT", "Only for work-related calls"],
+    correctIndex: 2,
+    explanation: "Phone use is strictly prohibited while operating PIT equipment under any circumstances. Park the equipment safely and dismount before using your phone.",
+    whyWrong: {
+      0: "Incorrect — Even when stopped, you are still the operator. You must park, set the brake, and dismount before using a phone.",
+      1: "Incorrect — Hands-free does not eliminate cognitive distraction. PIT operation requires full mental attention. No phone use of any kind.",
+      3: "Incorrect — No exception exists for work calls. All phone use is prohibited during PIT operation regardless of the reason."
+    },
+    policyRef: "WHS NA Policy: PIT Safety — Electronic Device Prohibition",
+    source: ""
+  },
+  {
+    id: "phone-4",
+    category: "WHS - Phone & Headphones",
+    question: "What should you do if you need to take an urgent personal call during your shift?",
+    answers: ["Take it at your workstation", "Step to a designated safe area or break room away from operational hazards", "Ignore it until break", "Answer while walking to the break room"],
+    correctIndex: 1,
+    explanation: "For urgent calls, move to a designated safe area or break room — away from PIT lanes, conveyors, and operational hazards — before using your phone.",
+    whyWrong: {
+      0: "Unsafe — Using your phone at your workstation diverts attention from moving equipment, conveyors, and other hazards around you.",
+      2: "While waiting for break is ideal for non-urgent calls, truly urgent calls should be taken in a safe area. Communicate with your PA/manager.",
+      3: "Unsafe — Answering while walking creates distracted walking. Stop in a safe location first, then take the call."
+    },
+    policyRef: "WHS NA Policy: Electronic Device Safety — Safe Phone Use",
+    source: ""
+  },
+  {
+    id: "phone-5",
+    category: "WHS - Phone & Headphones",
+    question: "A coworker is wearing earbuds on the floor. What should you do?",
+    answers: ["Ignore it — it's their choice", "Politely remind them of the WHS policy and report if they refuse", "Take the earbuds from them", "Only report if an incident happens"],
+    correctIndex: 1,
+    explanation: "You have a responsibility to look out for coworker safety. Politely remind them of the policy. If they refuse, report it to leadership — their safety and yours depends on it.",
+    whyWrong: {
+      0: "Incorrect — Safety is everyone's responsibility. Ignoring a known hazard puts your coworker and others at risk.",
+      2: "Incorrect — Do not take personal property. A polite reminder and escalation to leadership is the appropriate response.",
+      3: "Too late — Waiting for an incident means waiting for someone to get hurt. Proactive correction prevents injuries."
+    },
+    policyRef: "WHS NA Policy: Associate Safety Responsibility & Peer Coaching",
+    source: ""
+  },
+
+  // ═══════════════════════════════════════════════════════════
+  // WHS - PARKING LOT SAFETY
+  // ═══════════════════════════════════════════════════════════
+  {
+    id: "park-1",
+    category: "WHS - Parking Lot Safety",
+    question: "What is the speed limit in Amazon facility parking lots per WHS guidelines?",
+    answers: ["15 mph", "10 mph", "5 mph", "25 mph"],
+    correctIndex: 2,
+    explanation: "The WHS standard speed limit in Amazon parking lots is 5 mph. Parking lots have high pedestrian traffic, especially during shift changes.",
+    whyWrong: {
+      0: "Too fast — 15 mph does not allow enough stopping distance for the high pedestrian density in Amazon parking lots.",
+      1: "Too fast — Even 10 mph is unsafe given the volume of pedestrians walking to and from the building during shift changes.",
+      3: "Extremely dangerous — 25 mph in a parking lot full of pedestrians is reckless and violates WHS policy."
+    },
+    policyRef: "WHS NA Policy: Parking Lot & Pedestrian Safety",
+    source: ""
+  },
+  {
+    id: "park-2",
+    category: "WHS - Parking Lot Safety",
+    question: "What is the safest way to walk through the parking lot to enter the building?",
+    answers: ["Walk anywhere — cars should stop for you", "Use designated pedestrian walkways and crosswalks", "Walk between parked cars for a shortcut", "Run to get inside quickly"],
+    correctIndex: 1,
+    explanation: "Always use designated pedestrian walkways and marked crosswalks. Make eye contact with drivers before crossing, stay visible, and stay alert.",
+    whyWrong: {
+      0: "Dangerous assumption — Drivers may not see you, especially in low light or bad weather. Never assume a car will stop.",
+      2: "Dangerous — Walking between parked cars makes you invisible to moving vehicles until you step into the lane.",
+      3: "Unsafe — Running reduces your ability to react to vehicles and makes it harder for drivers to predict your movement."
+    },
+    policyRef: "WHS NA Policy: Parking Lot & Pedestrian Safety",
+    source: ""
+  },
+  {
+    id: "park-3",
+    category: "WHS - Parking Lot Safety",
+    question: "Is it safe to use your phone while walking through the parking lot?",
+    answers: ["Yes, it's outside the building so floor rules don't apply", "No — distracted walking in the parking lot is a WHS safety hazard", "Only for GPS or maps", "Only with one earbud in"],
+    correctIndex: 1,
+    explanation: "WHS safety extends to the parking lot. Distracted walking prevents you from seeing and hearing vehicles. Put your phone away until you're safely inside your car or the building.",
+    whyWrong: {
+      0: "Incorrect — WHS policy covers the entire site including the parking lot. The parking lot is one of the highest-risk pedestrian areas.",
+      2: "Incorrect — Any phone use while walking diverts your visual and cognitive attention from vehicle traffic around you.",
+      3: "Incorrect — Earbuds block auditory awareness of approaching vehicles. Full situational awareness is required in the parking lot."
+    },
+    policyRef: "WHS NA Policy: Parking Lot & Pedestrian Safety — Distracted Walking",
+    source: ""
+  },
+  {
+    id: "park-4",
+    category: "WHS - Parking Lot Safety",
+    question: "During shift change, what is the biggest WHS concern in the parking lot?",
+    answers: ["Weather conditions", "High volume of pedestrians and vehicles moving simultaneously", "Potholes and uneven pavement", "Insufficient lighting"],
+    correctIndex: 1,
+    explanation: "Shift changes create peak congestion with hundreds of pedestrians and vehicles. This is the highest-risk time for parking lot incidents. Extra caution is critical.",
+    whyWrong: {
+      0: "While weather is a factor, the primary WHS concern during shift change is the sheer volume of simultaneous pedestrian and vehicle movement.",
+      2: "While pavement conditions matter, the dominant risk during shift change is the high-density mix of people and cars.",
+      3: "While lighting is important, the primary shift-change hazard is congestion — even well-lit lots are dangerous when crowded."
+    },
+    policyRef: "WHS NA Policy: Parking Lot Safety — Shift Change Procedures",
+    source: ""
+  },
+  {
+    id: "park-5",
+    category: "WHS - Parking Lot Safety",
+    question: "What should you do if you see a vehicle driving recklessly in the parking lot?",
+    answers: ["Confront the driver directly", "Report it to site security/LP with a vehicle description and plate number if possible", "Ignore it — it's not your problem", "Post about it on the VOA board"],
+    correctIndex: 1,
+    explanation: "Report reckless driving to site security or Loss Prevention immediately with as much detail as possible. Do not confront the driver — that creates additional risk.",
+    whyWrong: {
+      0: "Dangerous — Confronting a reckless driver puts you at physical risk and could escalate the situation.",
+      2: "Incorrect — Reckless driving endangers every associate on site. Reporting it is part of your safety responsibility.",
+      3: "Insufficient — The VOA board is not monitored for urgent safety issues. Security/LP can take immediate action."
+    },
+    policyRef: "WHS NA Policy: Parking Lot Safety — Incident Reporting",
+    source: ""
+  },
+
+  // ═══════════════════════════════════════════════════════════
+  // WHS - HAZWASTE
+  // ═══════════════════════════════════════════════════════════
+  {
+    id: "hw-1",
+    category: "WHS - HazWaste",
+    question: "What is the maximum storage time for hazardous waste before disposal per WHS/EPA requirements?",
+    answers: ["30 days", "60 days", "90 days", "180 days"],
+    correctIndex: 2,
+    explanation: "Hazardous waste must be disposed of within 90 days of the accumulation start date. This is both an EPA regulation and Amazon WHS policy requirement.",
+    whyWrong: {
+      0: "Incorrect — While shorter storage is better, the regulatory maximum under EPA and WHS policy is 90 days, not 30.",
+      1: "Incorrect — 60 days is not the regulatory threshold. The maximum accumulation period is 90 days.",
+      3: "Incorrect — 180 days exceeds the legal limit. Storing hazardous waste beyond 90 days violates EPA regulations and can result in significant fines."
+    },
+    policyRef: "WHS NA Policy: Hazardous Waste Management — Accumulation Time Limits",
+    source: ""
+  },
+  {
+    id: "hw-2",
+    category: "WHS - HazWaste",
+    question: "What information must be on every hazardous waste container label?",
+    answers: ["Just the word 'Hazardous'", "Contents description, accumulation start date, and hazard warnings", "The associate's name who filled it", "The building code only"],
+    correctIndex: 1,
+    explanation: "Every container must display: the words 'Hazardous Waste', a description of contents, the accumulation start date, and all applicable hazard warnings.",
+    whyWrong: {
+      0: "Insufficient — The word alone doesn't identify what's inside, when accumulation started, or what hazards are present. Full labeling is required.",
+      2: "Incorrect — The associate's name is not a labeling requirement. Contents, start date, and hazard warnings are what's legally required.",
+      3: "Insufficient — A building code doesn't tell responders what's in the container or what hazards it presents."
+    },
+    policyRef: "WHS NA Policy: Hazardous Waste Management — Container Labeling",
+    source: ""
+  },
+  {
+    id: "hw-3",
+    category: "WHS - HazWaste",
+    question: "What should you do if you find a leaking battery on the warehouse floor?",
+    answers: ["Pick it up with gloves and throw it in the trash", "Secure the area, do NOT touch it, and notify WHS/EHS immediately", "Wipe it up with paper towels", "Put it in the nearest HazWaste container"],
+    correctIndex: 1,
+    explanation: "Leaking batteries contain corrosive and toxic chemicals. Secure the area to prevent contact, do NOT touch the substance, and notify WHS/EHS for proper hazmat cleanup.",
+    whyWrong: {
+      0: "Dangerous — Battery acid can burn through standard gloves. Regular trash disposal of batteries also violates hazardous waste regulations.",
+      2: "Dangerous — Paper towels do not neutralize battery chemicals, and contact with the substance can cause chemical burns.",
+      3: "Incorrect — You should not handle a leaking battery yourself. WHS/EHS has the proper PPE and neutralizing agents for safe cleanup."
+    },
+    policyRef: "WHS NA Policy: Hazardous Waste Management — Spill Response",
+    source: ""
+  },
+  {
+    id: "hw-4",
+    category: "WHS - HazWaste",
+    question: "Can different types of hazardous waste be mixed in the same container?",
+    answers: ["Yes, to save space", "Only liquids can be mixed together", "No — different waste types must never be mixed", "Yes, if they look similar"],
+    correctIndex: 2,
+    explanation: "NEVER mix different types of hazardous waste. Mixing can cause dangerous chemical reactions including fires, explosions, or toxic gas release.",
+    whyWrong: {
+      0: "Extremely dangerous — Mixing incompatible chemicals can cause violent reactions, fires, or release of toxic gases. Space savings are never worth the risk.",
+      1: "Dangerous — Mixing any hazardous liquids can be especially volatile. Liquid chemicals are often the most reactive when combined.",
+      3: "Dangerous — Appearance tells you nothing about chemical compatibility. Chemicals that look identical can react violently when mixed."
+    },
+    policyRef: "WHS NA Policy: Hazardous Waste Management — Waste Segregation",
+    source: ""
+  },
+  {
+    id: "hw-5",
+    category: "WHS - HazWaste",
+    question: "What training is required before handling hazardous waste per WHS policy?",
+    answers: ["No training needed — just use common sense", "On-the-job shadowing is sufficient", "HazWaste/HAZWOPER awareness training", "First aid certification only"],
+    correctIndex: 2,
+    explanation: "Associates must complete HazWaste awareness training (HAZWOPER) before handling any hazardous materials. This is an OSHA and EPA requirement enforced by WHS.",
+    whyWrong: {
+      0: "Incorrect and illegal — OSHA requires documented hazardous waste training. 'Common sense' does not teach chemical identification or proper handling.",
+      1: "Insufficient — OSHA requires formal, documented training with specific content requirements. Shadowing alone does not meet the legal standard.",
+      3: "Incorrect — First aid certification does not cover hazardous material identification, handling, storage, or disposal procedures."
+    },
+    policyRef: "WHS NA Policy: Hazardous Waste Management — Training Requirements",
+    source: ""
+  },
+  {
+    id: "hw-6",
+    category: "WHS - HazWaste",
+    question: "Where must hazardous waste accumulation containers be stored?",
+    answers: ["Anywhere convenient on the floor", "In designated accumulation areas with proper signage and secondary containment", "Outside the building", "In the manager's office for security"],
+    correctIndex: 1,
+    explanation: "HazWaste must be stored in designated accumulation areas with proper signage, secondary containment (to catch leaks), and restricted access per EPA and WHS requirements.",
+    whyWrong: {
+      0: "Violation — Storing HazWaste in random locations creates exposure risk and violates EPA accumulation area requirements.",
+      2: "Incorrect — Outdoor storage exposes containers to weather, temperature extremes, and unauthorized access, violating storage requirements.",
+      3: "Incorrect — An office is not a proper accumulation area. HazWaste requires secondary containment, ventilation, and proper signage."
+    },
+    policyRef: "WHS NA Policy: Hazardous Waste Management — Accumulation Areas",
+    source: ""
+  },
+  {
+    id: "hw-7",
+    category: "WHS - HazWaste",
+    question: "What is the proper response if you smell an unknown chemical odor in your work area?",
+    answers: ["Investigate the source yourself", "Leave the area immediately, alert others nearby, and report to WHS/leadership", "Open a door for ventilation and keep working", "Ignore it if it goes away quickly"],
+    correctIndex: 1,
+    explanation: "Leave immediately — unknown chemical odors could be toxic. Alert nearby associates, move to fresh air, and report to WHS/leadership for investigation.",
+    whyWrong: {
+      0: "Dangerous — Investigating unknown chemicals without proper PPE and training can expose you to toxic, flammable, or corrosive substances.",
+      2: "Dangerous — Continuing to work in an area with unknown chemical odors risks toxic exposure. Ventilation alone may not make it safe.",
+      3: "Dangerous — Even brief chemical exposure can cause harm. A smell that 'goes away' may mean the chemical is still present but your nose has adapted."
+    },
+    policyRef: "WHS NA Policy: Hazardous Waste Management — Unknown Chemical Response",
+    source: ""
+  },
+];
+
+// ── Data Layer API ────────────────────────────────────────────
+
+const DataLayer = {
+  async getQuestions(category, count = 5) {
+    const questions = SAMPLE_QUESTIONS.filter(q => q.category === category);
+    return shuffle(questions).slice(0, count);
+  },
+  getCategories() {
+    return CATEGORIES;
+  }
+};
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+/* ── Spinning Wheel ──────────────────────────────────────────── */
+
+class SpinWheel {
+  constructor(canvasId, categories) {
+    this.canvas = document.getElementById(canvasId);
+    this.ctx = this.canvas.getContext("2d");
+    this.categories = categories;
+    this.arc = (2 * Math.PI) / categories.length;
+    this.angle = 0;
+    this.spinning = false;
+    this.draw();
+  }
+
+  draw() {
+    const { ctx, canvas, categories, arc } = this;
+    const cx = canvas.width / 2;
+    const cy = canvas.height / 2;
+    const r = cx - 10;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    categories.forEach((cat, i) => {
+      const start = this.angle + i * arc;
+      const end = start + arc;
+
+      // Segment
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.arc(cx, cy, r, start, end);
+      ctx.closePath();
+      ctx.fillStyle = cat.color;
+      ctx.fill();
+      ctx.strokeStyle = "#fff";
+      ctx.lineWidth = 3;
+      ctx.stroke();
+
+      // Label
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate(start + arc / 2);
+      ctx.fillStyle = "#fff";
+      ctx.font = "bold 13px system-ui, sans-serif";
+      ctx.textAlign = "right";
+      ctx.shadowColor = "rgba(0,0,0,0.5)";
+      ctx.shadowBlur = 3;
+      ctx.fillText(cat.name, r - 20, 5);
+      ctx.restore();
+    });
+
+    // Center circle
+    ctx.beginPath();
+    ctx.arc(cx, cy, 22, 0, 2 * Math.PI);
+    ctx.fillStyle = "#1a1a2e";
+    ctx.fill();
+    ctx.strokeStyle = "#fff";
+    ctx.lineWidth = 3;
+    ctx.stroke();
+  }
+
+  spin() {
+    return new Promise(resolve => {
+      if (this.spinning) return;
+      this.spinning = true;
+
+      const totalRotation = Math.PI * 2 * (5 + Math.random() * 5); // 5-10 full spins
+      const duration = 4000;
+      const start = performance.now();
+      const startAngle = this.angle;
+
+      const animate = (now) => {
+        const elapsed = now - start;
+        const progress = Math.min(elapsed / duration, 1);
+        // Ease-out cubic
+        const eased = 1 - Math.pow(1 - progress, 3);
+
+        this.angle = startAngle + totalRotation * eased;
+        this.draw();
+
+        if (progress < 1) {
+          requestAnimationFrame(animate);
+        } else {
+          this.spinning = false;
+          // Determine which segment the pointer (top center) lands on
+          const normalized = ((2 * Math.PI - (this.angle % (2 * Math.PI))) + Math.PI * 1.5) % (2 * Math.PI);
+          const index = Math.floor(normalized / this.arc) % this.categories.length;
+          resolve(this.categories[index]);
+        }
+      };
+
+      requestAnimationFrame(animate);
+    });
+  }
+}
+
+/* ── App Controller ──────────────────────────────────────────── */
+
+(function () {
+  let score = 0, streak = 0, totalAnswered = 0;
+  let currentQuestions = [], currentIndex = 0, roundCorrect = 0;
+  let timerInterval = null;
+  const QUESTION_TIME = 25;
+
+  const $ = id => document.getElementById(id);
+  const screens = document.querySelectorAll(".screen");
+
+  const wheel = new SpinWheel("wheel", DataLayer.getCategories());
+
+  function show(screen) {
+    screens.forEach(s => s.classList.remove("active"));
+    screen.classList.add("active");
+  }
+
+  function updateScore() {
+    $("score").textContent = score;
+    $("streak").textContent = streak;
+    $("q-count").textContent = totalAnswered;
+  }
+
+  // ── Spin ──
+  $("spin-btn").addEventListener("click", async () => {
+    $("spin-btn").disabled = true;
+    $("selected-category").classList.add("hidden");
+    const cat = await wheel.spin();
+    $("cat-name").textContent = cat.name;
+    $("cat-name").style.color = cat.color;
+    $("selected-category").classList.remove("hidden");
+    $("spin-btn").disabled = false;
+
+    $("start-quiz-btn").onclick = async () => {
+      currentQuestions = await DataLayer.getQuestions(cat.name, 5);
+      if (!currentQuestions.length) {
+        $("cat-name").textContent = cat.name + " — No questions available yet!";
+        return;
+      }
+      currentIndex = 0;
+      roundCorrect = 0;
+      show($("quiz-screen"));
+      $("quiz-category-badge").textContent = cat.name;
+      $("quiz-category-badge").style.background = cat.color;
+      loadQuestion();
+    };
+  });
+
+  // ── Quiz ──
+  function loadQuestion() {
+    const q = currentQuestions[currentIndex];
+    $("quiz-progress").textContent = `${currentIndex + 1} / ${currentQuestions.length}`;
+    $("question-text").textContent = q.question;
+    $("answers").innerHTML = "";
+    $("feedback").classList.add("hidden");
+    $("next-btn").classList.add("hidden");
+    $("back-to-wheel").classList.add("hidden");
+
+    q.answers.forEach((ans, i) => {
+      const btn = document.createElement("button");
+      btn.className = "answer-btn";
+      btn.textContent = ans;
+      btn.addEventListener("click", () => selectAnswer(i));
+      $("answers").appendChild(btn);
+    });
+    startTimer();
+  }
+
+  function startTimer() {
+    clearInterval(timerInterval);
+    let t = QUESTION_TIME;
+    $("timer-fill").style.width = "100%";
+    $("timer-fill").style.background = "#2EC4B6";
+    timerInterval = setInterval(() => {
+      t -= 0.1;
+      const pct = (t / QUESTION_TIME) * 100;
+      $("timer-fill").style.width = pct + "%";
+      if (pct < 30) $("timer-fill").style.background = "#E71D36";
+      else if (pct < 60) $("timer-fill").style.background = "#FFBE0B";
+      if (t <= 0) { clearInterval(timerInterval); selectAnswer(-1); }
+    }, 100);
+  }
+
+  function selectAnswer(index) {
+    clearInterval(timerInterval);
+    const q = currentQuestions[currentIndex];
+    const buttons = $("answers").querySelectorAll(".answer-btn");
+
+    buttons.forEach((btn, i) => {
+      btn.disabled = true;
+      if (i === q.correctIndex) btn.classList.add("correct");
+      if (i === index && index !== q.correctIndex) btn.classList.add("wrong");
+    });
+
+    totalAnswered++;
+    const isCorrect = index === q.correctIndex;
+    const fb = $("feedback");
+
+    if (isCorrect) {
+      score += 10 + streak * 2;
+      streak++;
+      roundCorrect++;
+      fb.innerHTML = buildFeedback("correct", "✅ Correct!", q.explanation, null, q.policyRef, q.source);
+      fb.className = "feedback-correct";
+    } else if (index === -1) {
+      streak = 0;
+      fb.innerHTML = buildFeedback("wrong", "⏰ Time's Up!", q.explanation,
+        "You ran out of time. The correct answer is highlighted above.",
+        q.policyRef, q.source);
+      fb.className = "feedback-wrong";
+    } else {
+      streak = 0;
+      const wrongReason = q.whyWrong ? q.whyWrong[index] : null;
+      fb.innerHTML = buildFeedback("wrong", "❌ Incorrect", q.explanation,
+        wrongReason, q.policyRef, q.source);
+      fb.className = "feedback-wrong";
+    }
+
+    fb.classList.remove("hidden");
+    updateScore();
+
+    if (currentIndex < currentQuestions.length - 1) {
+      $("next-btn").classList.remove("hidden");
+    } else {
+      setTimeout(showResults, 1500);
+    }
+  }
+
+  function buildFeedback(type, title, explanation, wrongReason, policyRef, source) {
+    let html = `<div class="fb-title">${title}</div>`;
+
+    if (wrongReason) {
+      html += `<div class="fb-why-wrong"><strong>Why your answer is wrong:</strong> ${wrongReason}</div>`;
+    }
+
+    html += `<div class="fb-explanation"><strong>Correct answer explanation:</strong> ${explanation}</div>`;
+
+    if (policyRef) {
+      html += `<div class="fb-policy">📋 <strong>Policy Reference:</strong> ${policyRef}`;
+      if (source) html += ` — <a href="${source}" target="_blank">View Full Policy</a>`;
+      html += `</div>`;
+    }
+
+    return html;
+  }
+
+  $("next-btn").addEventListener("click", () => { currentIndex++; loadQuestion(); });
+  $("back-to-wheel").addEventListener("click", () => show($("spin-screen")));
+
+  // ── Results ──
+  function showResults() {
+    show($("results-screen"));
+    const pct = Math.round((roundCorrect / currentQuestions.length) * 100);
+    const emoji = pct === 100 ? "🏆" : pct >= 80 ? "🌟" : pct >= 60 ? "👏" : "📚";
+    const msg = pct === 100 ? "Perfect! You know your WHS policy!" :
+                pct >= 80 ? "Great job! Almost perfect!" :
+                pct >= 60 ? "Good effort! Review the policies you missed." :
+                "Keep studying! Review the WHS policies and try again.";
+
+    $("results-stats").innerHTML = `
+      <div class="result-big">${emoji} ${pct}%</div>
+      <p>${msg}</p>
+      <p>You got <strong>${roundCorrect}</strong> out of <strong>${currentQuestions.length}</strong> correct</p>
+      <p>Total Score: <strong>${score}</strong> | Streak: <strong>${streak}</strong> 🔥</p>
+    `;
+  }
+
+  $("play-again-btn").addEventListener("click", () => show($("spin-screen")));
+  updateScore();
+})();
+  </script>
+</body>
+</html>
